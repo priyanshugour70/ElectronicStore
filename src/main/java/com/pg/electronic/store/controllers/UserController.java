@@ -114,7 +114,7 @@ public class UserController {
     // upload user image
     @PostMapping("/image/{userId}")
     public ResponseEntity<ImageResponse> uploadUserImage(
-            @RequestParam("userImage")MultipartFile image,
+            @RequestParam("userImage") MultipartFile image,
             @PathVariable String userId
             ) throws IOException {
 
