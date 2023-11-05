@@ -2,9 +2,11 @@ package com.pg.electronic.store.services.impl;
 
 import com.pg.electronic.store.dtos.PageableResponse;
 import com.pg.electronic.store.dtos.UserDto;
+import com.pg.electronic.store.entities.Role;
 import com.pg.electronic.store.entities.User;
 import com.pg.electronic.store.exceptions.ResourceNotFoundException;
 import com.pg.electronic.store.helper.Helper;
+import com.pg.electronic.store.repositories.RoleRepository;
 import com.pg.electronic.store.repositories.UserRepository;
 import com.pg.electronic.store.services.UserService;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,9 +27,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,6 +42,14 @@ public class UserServiceImpl implements UserService {
 
     @Value("${user.profile.image.path}")
     private String imagePath;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Value("${normal.role.id}")
+    private String normalRoleId;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -46,15 +57,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
 
-        // Generate Unique id in string format..!
+        //generate unique id in string format
         String userId = UUID.randomUUID().toString();
         userDto.setUserId(userId);
-
-        // Dto To Entity
+        //encoding password
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        // dto->entity
         User user = dtoToEntity(userDto);
+        //fetch role of normal and set it to user
+        Role role = roleRepository.findById(normalRoleId).get();
+        user.getRoles().add(role);
         User savedUser = userRepository.save(user);
-
-        // Entity To Dto
+        //entity -> dto
         UserDto newDto = entityToDto(savedUser);
         return newDto;
     }
@@ -62,97 +76,84 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto, String userId) {
-
-        // Get Data using Id
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not Found with given Id !! "));
-
-
-        // Set Data
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with given id !!"));
         user.setName(userDto.getName());
-//        user.setEmail(userDto.getEmail());
+        //email update
         user.setAbout(userDto.getAbout());
         user.setGender(userDto.getGender());
-        user.setPassword(userDto.getPassword());
-        user.setImageName(userDto.getImageName());
 
-        // Save Data..
+        if (!userDto.getPassword().equalsIgnoreCase(user.getPassword()))
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
+        user.setImageName(userDto.getImageName());
+        //save data
         User updatedUser = userRepository.save(user);
         UserDto updatedDto = entityToDto(updatedUser);
         return updatedDto;
     }
 
-
     @Override
     public void deleteUser(String userId) {
-
-        // Get Data using Id
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not Found with given Id !! "));
-
-        // delete user profile image..
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found with given id !!"));
+        //delete user profile image
+        //images/user/abc.png
         String fullPath = imagePath + user.getImageName();
 
-        try{
+        try {
             Path path = Paths.get(fullPath);
             Files.delete(path);
-        }catch (NoSuchFileException ex){
-            logger.info("User Image not found in folder..!");
+        } catch (NoSuchFileException ex) {
+            logger.info("User image not found in folder");
             ex.printStackTrace();
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Delete User
+        //delete user
         userRepository.delete(user);
-    }
 
+    }
 
     @Override
     public PageableResponse<UserDto> getAllUser(int pageNumber, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+//        pageNumber default starts from 0
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        // Page Number default starts form 0
-        Pageable pageable = PageRequest.of(pageNumber,pageSize, sort);
         Page<User> page = userRepository.findAll(pageable);
 
         PageableResponse<UserDto> response = Helper.getPageableResponse(page, UserDto.class);
 
         return response;
-    }
 
+    }
 
     @Override
     public UserDto getUserById(String userId) {
-
-        // Get Data using Id
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not Found with given Id !! "));
-
-        UserDto userDto = entityToDto(user);
-        return userDto;
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found with given id !!"));
+        return entityToDto(user);
     }
 
     @Override
     public UserDto getUserByEmail(String email) {
-
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User Not Found with given Email id"));
-        UserDto userDto = entityToDto(user);
-
-        return userDto;
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with given email id !!"));
+        return entityToDto(user);
     }
 
     @Override
     public List<UserDto> searchUser(String keyword) {
-
         List<User> users = userRepository.findByNameContaining(keyword);
         List<UserDto> dtoList = users.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
-
         return dtoList;
     }
 
+    @Override
+    public Optional<User> findUserByEmailOptional(String email) {
+        return userRepository.findByEmail(email);
+    }
 
-    // Practice ...
     private UserDto entityToDto(User savedUser) {
-
 //        UserDto userDto = UserDto.builder()
 //                .userId(savedUser.getUserId())
 //                .name(savedUser.getName())
@@ -162,9 +163,8 @@ public class UserServiceImpl implements UserService {
 //                .gender(savedUser.getGender())
 //                .imageName(savedUser.getImageName())
 //                .build();
-//        return userDto;
-
         return mapper.map(savedUser, UserDto.class);
+
     }
 
     private User dtoToEntity(UserDto userDto) {
@@ -177,8 +177,6 @@ public class UserServiceImpl implements UserService {
 //                .gender(userDto.getGender())
 //                .imageName(userDto.getImageName())
 //                .build();
-//        return user;
-
         return mapper.map(userDto, User.class);
     }
 }

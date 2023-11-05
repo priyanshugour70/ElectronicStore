@@ -1,27 +1,29 @@
 package com.pg.electronic.store.controllers;
 
-
+import com.pg.electronic.store.dtos.*;
 import com.pg.electronic.store.dtos.ApiResponseMessage;
 import com.pg.electronic.store.dtos.ImageResponse;
 import com.pg.electronic.store.dtos.PageableResponse;
 import com.pg.electronic.store.dtos.ProductDto;
 import com.pg.electronic.store.services.FileService;
 import com.pg.electronic.store.services.ProductService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
 @RestController
 @RequestMapping("/products")
+//@CrossOrigin(origins = "*")
 public class ProductController {
 
     @Autowired
@@ -34,35 +36,41 @@ public class ProductController {
     private String imagePath;
 
     //create
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
         ProductDto createdProduct = productService.create(productDto);
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
-    // update
+    //update
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{productId}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @RequestBody ProductDto productDto) {
         ProductDto updatedProduct = productService.update(productDto, productId);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
-    // delete
+
+    //delete
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{productId}")
     public ResponseEntity<ApiResponseMessage> delete(@PathVariable String productId) {
         productService.delete(productId);
         ApiResponseMessage responseMessage = ApiResponseMessage.builder().message("Product is deleted successfully !!").status(HttpStatus.OK).success(true).build();
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);
+
     }
 
-    // get single
+    //get single
+
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable String productId) {
         ProductDto productDto = productService.get(productId);
         return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
 
-    // get all
+    //get all
     @GetMapping
     public ResponseEntity<PageableResponse<ProductDto>> getAll(
             @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
@@ -75,8 +83,9 @@ public class ProductController {
         return new ResponseEntity<>(pageableResponse, HttpStatus.OK);
     }
 
-    // get all live
-    // /products/live
+
+    //get all live
+//    /products/live
     @GetMapping("/live")
     public ResponseEntity<PageableResponse<ProductDto>> getAllLive(
             @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
@@ -89,8 +98,7 @@ public class ProductController {
         return new ResponseEntity<>(pageableResponse, HttpStatus.OK);
     }
 
-
-    // search all
+    //search
     @GetMapping("/search/{query}")
     public ResponseEntity<PageableResponse<ProductDto>> searchProduct(
             @PathVariable String query,
@@ -104,8 +112,8 @@ public class ProductController {
         return new ResponseEntity<>(pageableResponse, HttpStatus.OK);
     }
 
-
     //upload image
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/image/{productId}")
     public ResponseEntity<ImageResponse> uploadProductImage(
             @PathVariable String productId,
@@ -131,6 +139,5 @@ public class ProductController {
         StreamUtils.copy(resource, response.getOutputStream());
 
     }
-
 
 }

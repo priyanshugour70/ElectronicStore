@@ -1,7 +1,8 @@
 package com.pg.electronic.store.entities;
 
-import jakarta.persistence.*;
 import lombok.*;
+
+import javax.persistence.*;
 
 @AllArgsConstructor
 @NoArgsConstructor

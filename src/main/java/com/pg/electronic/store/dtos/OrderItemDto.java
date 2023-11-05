@@ -1,7 +1,5 @@
 package com.pg.electronic.store.dtos;
 
-
-
 import lombok.*;
 
 @Getter

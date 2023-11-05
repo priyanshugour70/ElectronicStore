@@ -1,7 +1,8 @@
 package com.pg.electronic.store.entities;
 
-import jakarta.persistence.*;
 import lombok.*;
+
+import javax.persistence.*;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class CartItem {
     private Product product;
     private  int quantity;
     private  int totalPrice;
-    //    mapping cart
+//    mapping cart
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
     private  Cart cart;

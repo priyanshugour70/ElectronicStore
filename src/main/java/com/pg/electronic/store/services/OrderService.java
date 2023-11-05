@@ -1,7 +1,5 @@
 package com.pg.electronic.store.services;
 
-
-
 import com.pg.electronic.store.dtos.CreateOrderRequest;
 import com.pg.electronic.store.dtos.OrderDto;
 import com.pg.electronic.store.dtos.OrderUpdateRequest;
@@ -28,4 +26,3 @@ public interface OrderService {
     //order methods(logic) related to order
 
 }
-

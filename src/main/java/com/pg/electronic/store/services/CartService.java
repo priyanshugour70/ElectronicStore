@@ -18,4 +18,3 @@ public interface CartService {
 
     CartDto getCartByUser(String userId);
 }
-

@@ -1,5 +1,6 @@
 package com.pg.electronic.store.services.impl;
 
+
 import com.pg.electronic.store.exceptions.BadApiRequestException;
 import com.pg.electronic.store.services.FileService;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-
 @Service
 public class FileServiceImpl implements FileService {
 
@@ -21,42 +21,43 @@ public class FileServiceImpl implements FileService {
     @Override
     public String uploadFile(MultipartFile file, String path) throws IOException {
 
+        //abc.png
         String originalFilename = file.getOriginalFilename();
-        logger.info("FileName is : {}", originalFilename);
-
+        logger.info("Filename : {}", originalFilename);
         String filename = UUID.randomUUID().toString();
-        String extension=originalFilename.substring(originalFilename.lastIndexOf("."));
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileNameWithExtension = filename + extension;
+        String fullPathWithFileName = path  + fileNameWithExtension;
 
-        String fileNameWithExtension=filename+extension;
+        logger.info("full image path: {} ", fullPathWithFileName);
+        if (extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg") || extension.equalsIgnoreCase(".jpeg")) {
 
-        String fullPathWithFileName =path +fileNameWithExtension;
-
-        logger.info("Full Image Path : {}",fullPathWithFileName);
-        if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg") || extension.equalsIgnoreCase(".jpeg")) {
-
-            //File Save
-            logger.info("File Extension is : {}", extension);
+            //file save
+            logger.info("file extension is {} ", extension);
             File folder = new File(path);
-            if(!folder.exists()){
-                // Create Folder
+            if (!folder.exists()) {
+                //create the folder
                 folder.mkdirs();
+
             }
 
-            // upload
+            //upload
             Files.copy(file.getInputStream(), Paths.get(fullPathWithFileName));
             return fileNameWithExtension;
-        }else{
-            throw new BadApiRequestException("File With This "+ extension+" Not Allowed..!");
+
+        } else {
+            throw new BadApiRequestException("File with this " + extension + " not allowed !!");
         }
+
+
     }
 
     @Override
     public InputStream getResource(String path, String name) throws FileNotFoundException {
-
-        String fullPath = path+File.separator+name;
-
+        String fullPath = path + File.separator + name;
         InputStream inputStream = new FileInputStream(fullPath);
-
         return inputStream;
     }
+
+
 }
