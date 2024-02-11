@@ -1,0 +1,14 @@
+# Use an official MySQL 8.1 image as the base image
+FROM mysql:8
+
+# Set MySQL root user password (change 'root' to your preferred password)
+ENV MYSQL_ROOT_PASSWORD=root
+
+# Create a database named 'electronic_store'
+ENV MYSQL_DATABASE=electronic_store
+
+# Expose port 3306
+EXPOSE 3306
+
+# The default command to run when the container starts
+CMD ["mysqld"]

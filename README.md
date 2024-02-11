@@ -37,7 +37,21 @@ Before getting started, ensure that you have the following prerequisites:
 - Node.js (v14 or higher)
 - Java (v17 or higher)
 
-## Installation
+## 1. Installation
+
+To install the project, you can use the following commands:
+
+#### Install Docker and follow this command:
+ For Starting the project
+```
+docker-compose up
+```
+ For Stopping the project
+```
+docker-compose down
+```
+
+## 2. Installation
 
 Follow these steps to set up the ElectronicStore project locally:
 
@@ -51,37 +65,64 @@ git clone https://github.com/priyanshugour70/ElectronicStore.git
 cd ElectronicStore
 ```
 
-=====================================================
-1. Open the frontend directory:
+3. Configure the project.
 ```
-cd ES-frontend
-```
-
-2. Build the Docker image using the Dockerfile in the frontend directory:
-```
-docker build -t frontend-image .
+:: ls
+    ElectronicStoreBackend[Spring-boot]
+    ElectronicStoreFronted[ReactJs]
+    database[MySQL]
 ```
 
-3. Run the Docker container based on the built image:
+### Configuration Database (MySQL)
+1. Create a MySQL database.
 ```
-docker run -p frontend-port:container-port frontend-image
-```
------------------------------------------------------
-1. Open the backend directory:
-```
-cd ES-backend
+CREATE DATABASE electronic_store;
 ```
 
-2. Build the Docker image using the Dockerfile in the backend directory:
+2. Change into the database directory.
 ```
-docker build -t backend-image .
-```
-
-3. Run the Docker container based on the built image:
-```
-docker run -p backend-port:container-port backend-image
+cd database
 ```
 
+3. Run the electronic_stoe.sql file.
+```
+mysql -u root -p < electronic_store.sql
+```
+
+
+
+### Configuration Backend (Spring-boot)
+1. Change into the Backend directory.
+```
+cd ElectronicStoreBackend
+```
+
+2. Install dependencies.
+```
+mvn clean install
+```
+
+3. Run the application.
+```
+mvn spring-boot:run
+```
+
+
+### Configuration Frontend (ReactJs)
+1. Change into the Fontend directory.
+```
+cd ElectronicStoreFrontend
+```
+
+2. Install dependencies.
+```
+npm install
+```
+
+3. Run the application.
+```
+npm start
+```
 
 
 ## Contributing
@@ -96,7 +137,7 @@ We welcome contributions to enhance the ElectronicStore project. To contribute, 
 
 ## License
 
-This project is licensed under the MIT License.
+Nothing special.
 
 
 ## Contact

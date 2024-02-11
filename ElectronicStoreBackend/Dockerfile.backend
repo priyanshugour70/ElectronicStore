@@ -1,0 +1,25 @@
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:17
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the Maven executable to the container image
+COPY mvnw .
+COPY .mvn .mvn
+
+# Make the mvnw script executable
+RUN chmod +x mvnw
+
+# Copy the project files and directories to the container
+COPY pom.xml .
+COPY src ./src
+
+# Build the application
+RUN ./mvnw package -DskipTests
+
+# Expose port 9090
+EXPOSE 9090
+
+# Define the entry point for the application
+ENTRYPOINT ["java", "-jar", "target/ElectronicStore-0.0.1-SNAPSHOT.jar"]
