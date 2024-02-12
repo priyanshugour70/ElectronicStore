@@ -2,7 +2,7 @@
 // export const BASE_URL = `http://localhost:9090`;
 
 // Use the service name specified in your docker-compose.yml for the backend service
-export const BASE_URL = `http://backend:9090`;
+export const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:8080';
 
 export const PRODUCT_PAGE_SIZE = 10;
 export const ADMIN_ORDER_PAGE_SIZE = 10;
